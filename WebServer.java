@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -10,14 +11,18 @@ public class WebServer {
         JsonParser jsonParser=new JsonParser();
         try {
             config=jsonParser.parse("config.json");
-            ServerSocket serverSocket=new ServerSocket(Integer.parseInt(config.getPort()));
-            Socket socket=serverSocket.accept();
-            InputStream incomingRequest=socket.getInputStream();
-            OutputStream responseStream=socket.getOutputStream();
-            String response=getServerResponse("json");
-            responseStream.write(response.getBytes());
-            incomingRequest.close();
-            responseStream.close();
+            ServerSocket serverSocket=new ServerSocket(Integer.parseInt(config.getPort()),0, InetAddress.getByName("0.0.0.0"));
+            while(true){
+                Socket socket=serverSocket.accept();
+                System.out.println("Incoming IP:"+socket.getInetAddress().toString());
+                InputStream incomingRequest=socket.getInputStream();
+                OutputStream responseStream=socket.getOutputStream();
+                String response=getServerResponse("json");
+                responseStream.write(response.getBytes());
+                incomingRequest.close();
+                responseStream.close();
+                socket.close();
+            }
         } catch (IOException e) {
             System.out.println("Exception while parsing:"+e.getMessage());
         }
